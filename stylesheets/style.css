@@ -26,7 +26,7 @@ body, html {
 #window-title {
     font-family: hack, monospace;
     float: center;
-    width: 100%;
+    width: auto;
     margin-top: 7px;
 
     color: #ffffff;
