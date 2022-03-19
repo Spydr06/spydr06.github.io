@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && npm run build:cp-src",
-    "build:cp-src": "cp ./src/** ./dist",
+    "build:cp-src": "cp -r ./src/** ./dist",
     "type": "tsc --noEmit"
   },
   "author": "Spydr06",
