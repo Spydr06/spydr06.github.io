@@ -2,10 +2,18 @@
 <html>
     <head>
         <title>Spydr06</title>
-        <link rel="stylesheet" type="text/css" href="stylesheets/index.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
     </head>  
     <body>
-        <p id="hello-world"></p>
-        <script src="src/index.js"></script>
+        <div id="window">
+            <div id="title-bar">
+                <div id="window-close-button" class="window-button"></div>
+                <div id="window-minimize-button" class="window-button"></div>
+                <div id="window-maximize-button" class="window-button"></div>
+                <div id="window-title">shell: ~</div>
+            </div>
+            <textarea id="terminal" spellcheck="false"></textarea>
+        </div>
+        <script type="text/javascript" src="dist/index.js"></script>
     </body>
 </html>
