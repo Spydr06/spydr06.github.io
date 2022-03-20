@@ -68,21 +68,21 @@ enum CommandType {
 };
 
 class Command {
-    type: CommandType | boolean;
+    type: CommandType | undefined;
 
-    constructor(type: CommandType | boolean) {
+    constructor(type: CommandType | undefined) {
         this.type = type;
     }
 
     isError(): boolean {
-        return typeof(this.type) == 'boolean';
+        return typeof(this.type) == 'undefined';
     }
 
     static parse(str: String): Command {
-        if((<any>Object).values(CommandType).includes(str))
+        if((<any>Object).values(CommandType).includes(str.trim()))
             return new Command(str as CommandType);
         else
-            return new Command(true);
+            return new Command(undefined);
     }
 
     execute(term: Terminal) {
@@ -141,7 +141,7 @@ class Terminal {
             }
             e.preventDefault();
         }
-        else if(e.key.length == 1){
+        else if(e.key.length == 1 && !e.altKey && !e.ctrlKey && !e.metaKey){
             this.input += e.key;
             this.append(e.key);
             e.preventDefault();

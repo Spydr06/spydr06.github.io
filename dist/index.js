@@ -66,13 +66,13 @@ class Command {
         this.type = type;
     }
     isError() {
-        return typeof (this.type) == 'boolean';
+        return typeof (this.type) == 'undefined';
     }
     static parse(str) {
-        if (Object.values(CommandType).includes(str))
+        if (Object.values(CommandType).includes(str.trim()))
             return new Command(str);
         else
-            return new Command(true);
+            return new Command(undefined);
     }
     execute(term) {
         switch (this.type) {
@@ -122,7 +122,7 @@ class Terminal {
             }
             e.preventDefault();
         }
-        else if (e.key.length == 1) {
+        else if (e.key.length == 1 && !e.altKey && !e.ctrlKey && !e.metaKey) {
             this.input += e.key;
             this.append(e.key);
             e.preventDefault();
