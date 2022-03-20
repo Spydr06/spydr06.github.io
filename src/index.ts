@@ -1,23 +1,38 @@
 type Color = "red" | "green" | "blue" | "magenta" | "yellow" | "cyan";
 
+const SPAN_BOLD = "<span class='bold'>"
+const SPAN_UNDERLINED = "<span class='underline>"
+const SPAN_END = "</span>"
+
+function span_link(label: string, link: string, ): string {
+    return '<a href="' + link + '"><span class=link>' + label + '</span></a>';
+}
+
+function bold(str: string): string {
+    return '<span class=bold>' + str + '</span>';
+}
+
+function colored(str: string, color: Color): string {
+    return '<span style=\"color:' + color as string + '\">' + str + "</span>";
+}
+
 const HELP_TEXT = `
-====== spydr06.github.io ======
+${SPAN_BOLD}====== spydr06.github.io ======${SPAN_END}
 
-Commands:     Description:
-    clear    | Clears the terminal
-    help     | Displays this help text
-    about    | Displays some information about me,
-             | and my projects
-    socials  | Displays a list of my social media profiles
-    projects | Displays a list of some of my best projects
+Commands:
+ ${colored("*", "green")} ${bold("clear")}: Clears the terminal
+ ${colored("*", "green")} ${bold("help")}: Displays this help text
+ ${colored("*", "green")} ${bold("about")}: Displays some information about me, and my projects
+ ${colored("*", "green")} ${bold("socials")}: Displays a list of my social media profiles
+ ${colored("*", "green")} ${bold("projects")}: Displays a list of some of my best projects
 
-How do you run commands?
+${colored("How do you run commands?", "yellow")}
     Just type the name of one of the commands listed above
     and hit "Enter"
 `;
 
 const ABOUT_TEXT = `
-====== About Spydr06 ======
+${bold("====== About Spydr06 ======")}
 
 Hi there, I'm Spydr06.
 I'm a 10th grade student in Germany who is interested in Linux and programming.
@@ -38,11 +53,11 @@ You can visit my other profiles, by typing "socials".
 `;
 
 const SOCIALS_TEXT = `
-Spydr06's social media profiles:
-    GitHub: (Spydr06) https://github.com/Spydr06
-    Reddit: (u/mcspiderfe) https://reddit.com/u/mcspiderfe
-    Discord: Spydr#7096
-    EMail: spydr06@web.de
+${bold("Spydr06's social media profiles:")}
+${colored("*", "green")} GitHub:  ${span_link("Spydr06", "https://github.com/Spydr06")}
+${colored("*", "green")} Reddit: ${span_link("u/mcspiderfe", "https://reddit.com/u/mcspiderfe")}
+${colored("*", "green")} Discord: Spydr#7096
+${colored("*", "green")} EMail: spydr06@web.de
 `;
 
 enum CommandType {
@@ -89,6 +104,7 @@ class Command {
 
 class Terminal {
     elem: HTMLInputElement;
+
     prompt_fmt = "[%u@%h %d]$ ";
     current_dir = "~";
     current_user = "spydr"
@@ -99,8 +115,12 @@ class Terminal {
     constructor(elem_id: string) {
         let el = document.getElementById(elem_id);
         this.elem = el as HTMLInputElement;
+        
+        this.elem.setAttribute("contentEditable", "true");
+        this.elem.addEventListener("oncut", e => e.preventDefault(), false);
+        this.elem.addEventListener("onpaste", e => e.preventDefault(), false);
         this.elem.addEventListener('keypress', (e) => this.update(e));
-
+        
         this.prompt();
         this.updateCursor();
     }
@@ -114,6 +134,7 @@ class Terminal {
                 this.prompt();
                 break;
             case 'Backspace':
+                this.input = this.input.slice(0, this.input.length - 2);
                 break;
             default:
                 this.input += e.key;
@@ -129,22 +150,26 @@ class Terminal {
             return;
         let command = Command.parse(str);
         if(command.isError()) {
-            this.append("\n/bin/sh: command not found: " + str);
+            this.newline();
+            this.append_colored("/bin/sh: command not found: " + str, "red");
             return;
         }
 
         command.execute(this);
     }
 
+    parse_prompt(): string {
+        return this.prompt_fmt
+        .replace("%d", this.current_dir)
+        .replace("%u", this.current_user)
+        .replace("%h", this.current_host);
+    }
+
     prompt() {
         if(this.elem.innerHTML !== '')
             this.newline();
 
-        let str = this.prompt_fmt
-            .replace("%d", this.current_dir)
-            .replace("%u", this.current_user)
-            .replace("%h", this.current_host);
-        this.append(str);
+        this.append(this.parse_prompt());
     }
 
     append_colored(str: string, color: Color) {
@@ -152,12 +177,13 @@ class Terminal {
     }
 
     append(str: string) {
+        str = str.replace(/\n/g, '<br/>');
         this.elem.innerHTML += str;
     }
 
     newline() {
-        this.elem.innerHTML += '\n';
-        this.elem.scrollTo(0, this.elem.scrollHeight);
+        this.elem.innerHTML += '<br/>';
+        this.elem.scrollTop = this.elem.scrollHeight;
     }
 
     clear() {
@@ -165,8 +191,14 @@ class Terminal {
     }
 
     updateCursor() {
-        this.elem.focus();
-        this.elem.setSelectionRange(this.elem.value.length, this.elem.value.length);
+        let range = document.createRange();
+        let sel = window.getSelection();
+
+        range.setStart(this.elem.childNodes[this.elem.childNodes.length - 1], this.parse_prompt().length + this.input.length);
+        range.collapse(true);
+
+        sel?.removeAllRanges();
+        sel?.addRange(range);
     }
 }
 

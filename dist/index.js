@@ -1,22 +1,33 @@
 "use strict";
 var _a, _b, _c;
+const SPAN_BOLD = "<span class='bold'>";
+const SPAN_UNDERLINED = "<span class='underline>";
+const SPAN_END = "</span>";
+function span_link(label, link) {
+    return '<a href="' + link + '"><span class=link>' + label + '</span></a>';
+}
+function bold(str) {
+    return '<span class=bold>' + str + '</span>';
+}
+function colored(str, color) {
+    return '<span style=\"color:' + color + '\">' + str + "</span>";
+}
 const HELP_TEXT = `
-====== spydr06.github.io ======
+${SPAN_BOLD}====== spydr06.github.io ======${SPAN_END}
 
-Commands:     Description:
-    clear    | Clears the terminal
-    help     | Displays this help text
-    about    | Displays some information about me,
-             | and my projects
-    socials  | Displays a list of my social media profiles
-    projects | Displays a list of some of my best projects
+Commands:
+ ${colored("*", "green")} ${bold("clear")}: Clears the terminal
+ ${colored("*", "green")} ${bold("help")}: Displays this help text
+ ${colored("*", "green")} ${bold("about")}: Displays some information about me, and my projects
+ ${colored("*", "green")} ${bold("socials")}: Displays a list of my social media profiles
+ ${colored("*", "green")} ${bold("projects")}: Displays a list of some of my best projects
 
-How do you run commands?
+${colored("How do you run commands?", "yellow")}
     Just type the name of one of the commands listed above
     and hit "Enter"
 `;
 const ABOUT_TEXT = `
-====== About Spydr06 ======
+${bold("====== About Spydr06 ======")}
 
 Hi there, I'm Spydr06.
 I'm a 10th grade student in Germany who is interested in Linux and programming.
@@ -32,17 +43,16 @@ My current, and biggest project so far is my own programming language called "CS
 It's a imperative/procedural low-level language written in pure C, while having many
 similarities with C. You can find more information here: https://github.com/spydr06/cspydr.git
 
-You want to see a few more projects of me?: type "projects" into the console.
+You want to see a few more projects of me? type "projects" into the console.
 You can visit my other profiles, by typing "socials".
 `;
 const SOCIALS_TEXT = `
-Spydr06's social media profiles:
-    GitHub: (Spydr06) https://github.com/Spydr06
-    Reddit: (u/mcspiderfe) https://reddit.com/u/mcspiderfe
-    Discord: Spydr#7096
-    EMail: spydr06@web.de
+${bold("Spydr06's social media profiles:")}
+${colored("*", "green")} GitHub:  ${span_link("Spydr06", "https://github.com/Spydr06")}
+${colored("*", "green")} Reddit: ${span_link("u/mcspiderfe", "https://reddit.com/u/mcspiderfe")}
+${colored("*", "green")} Discord: Spydr#7096
+${colored("*", "green")} EMail: spydr06@web.de
 `;
-
 var CommandType;
 (function (CommandType) {
     CommandType["CLEAR"] = "clear";
@@ -89,6 +99,9 @@ class Terminal {
         this.input = "";
         let el = document.getElementById(elem_id);
         this.elem = el;
+        this.elem.setAttribute("contentEditable", "true");
+        this.elem.addEventListener("oncut", e => e.preventDefault(), false);
+        this.elem.addEventListener("onpaste", e => e.preventDefault(), false);
         this.elem.addEventListener('keypress', (e) => this.update(e));
         this.prompt();
         this.updateCursor();
@@ -102,6 +115,7 @@ class Terminal {
                 this.prompt();
                 break;
             case 'Backspace':
+                this.input = this.input.slice(0, this.input.length - 2);
                 break;
             default:
                 this.input += e.key;
@@ -115,36 +129,44 @@ class Terminal {
             return;
         let command = Command.parse(str);
         if (command.isError()) {
-            this.append("\n/bin/sh: command not found: " + str);
+            this.newline();
+            this.append_colored("/bin/sh: command not found: " + str, "red");
             return;
         }
         command.execute(this);
     }
-    prompt() {
-        if (this.elem.innerHTML !== '')
-            this.newline();
-        let str = this.prompt_fmt
+    parse_prompt() {
+        return this.prompt_fmt
             .replace("%d", this.current_dir)
             .replace("%u", this.current_user)
             .replace("%h", this.current_host);
-        this.append(str);
+    }
+    prompt() {
+        if (this.elem.innerHTML !== '')
+            this.newline();
+        this.append(this.parse_prompt());
     }
     append_colored(str, color) {
         this.elem.innerHTML += '<span style=\"color:' + color + '\">' + str + "</span>";
     }
     append(str) {
+        str = str.replace(/\n/g, '<br/>');
         this.elem.innerHTML += str;
     }
     newline() {
-        this.elem.innerHTML += '\n';
-        this.elem.scrollTo(0, this.elem.scrollHeight);
+        this.elem.innerHTML += '<br/>';
+        this.elem.scrollTop = this.elem.scrollHeight;
     }
     clear() {
         this.elem.innerHTML = "";
     }
     updateCursor() {
-        this.elem.focus();
-        this.elem.setSelectionRange(this.elem.value.length, this.elem.value.length);
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(this.elem.childNodes[this.elem.childNodes.length - 1], this.parse_prompt().length + this.input.length);
+        range.collapse(true);
+        sel === null || sel === void 0 ? void 0 : sel.removeAllRanges();
+        sel === null || sel === void 0 ? void 0 : sel.addRange(range);
     }
 }
 const term = new Terminal('terminal');
