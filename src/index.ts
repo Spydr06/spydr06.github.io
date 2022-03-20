@@ -4,28 +4,13 @@ const SPAN_BOLD = "<span class='bold'>"
 const SPAN_UNDERLINED = "<span class='underline>"
 const SPAN_END = "</span>"
 
-function span_link(label: string, link: string, ): string {
-    return '<a href="' + link + '"><span class=link>' + label + '</span></a>';
-}
-
-function bold(str: string): string {
-    return '<span class=bold>' + str + '</span>';
-}
-
-function colored(str: string, color: Color): string {
-    return '<span style=\"color:' + color as string + '\">' + str + "</span>";
-}
-
-const HELP_TEXT = `
+const HELP_TEXT1 = `
 ${SPAN_BOLD}====== spydr06.github.io ======${SPAN_END}
 
 Commands:
- ${colored("*", "green")} ${bold("clear")}: Clears the terminal
- ${colored("*", "green")} ${bold("help")}: Displays this help text
- ${colored("*", "green")} ${bold("about")}: Displays some information about me, and my projects
- ${colored("*", "green")} ${bold("socials")}: Displays a list of my social media profiles
- ${colored("*", "green")} ${bold("projects")}: Displays a list of some of my best projects
+`;
 
+const HELP_TEXT2 = `
 ${colored("How do you run commands?", "yellow")}
     Just type the name of one of the commands listed above
     and hit "Enter"
@@ -35,7 +20,7 @@ const ABOUT_TEXT = `
 ${bold("====== About Spydr06 ======")}
 
 Hi there, I'm Spydr06.
-I'm a 10th grade student in Germany who is interested in Linux and programming.
+I'm a 10th grade student from Germany who is interested in Linux and programming.
 
 I especially like developing "low(er)-level" stuff and really enjoy finding out how things
 like programming languages, operating systems and network connections work internally.
@@ -46,7 +31,7 @@ few little games and applications. Since two years now I mainly program in C and
 
 My current, and biggest project so far is my own programming language called "CSpydr".
 It's a imperative/procedural low-level language written in pure C, while having many
-similarities with C. You can find more information here: https://github.com/spydr06/cspydr.git
+similarities with C. You can find more information here: ${link("https://github.com/spydr06/cspydr.git", "https://github.com/spydr06/cspydr.git")}
 
 You want to see a few more projects of me? type "projects" into the console.
 You can visit my other profiles, by typing "socials".
@@ -54,52 +39,121 @@ You can visit my other profiles, by typing "socials".
 
 const SOCIALS_TEXT = `
 ${bold("Spydr06's social media profiles:")}
-${colored("*", "green")} GitHub:  ${span_link("Spydr06", "https://github.com/Spydr06")}
-${colored("*", "green")} Reddit: ${span_link("u/mcspiderfe", "https://reddit.com/u/mcspiderfe")}
+${colored("*", "green")} GitHub:  ${link("Spydr06", "https://github.com/Spydr06")}
+${colored("*", "green")} Reddit: ${link("u/mcspiderfe", "https://reddit.com/u/mcspiderfe")}
 ${colored("*", "green")} Discord: Spydr#7096
 ${colored("*", "green")} EMail: spydr06@web.de
 `;
 
-enum CommandType {
-    CLEAR = 'clear',
-    HELP = 'help',
-    ABOUT = 'about',
-    SOCIALS = 'socials',
+interface Command {
+    id: string;
+    description: string;
+    expectedArgs: number;
+
+    execute: (term: Terminal, args: string[]) => boolean;
 };
 
-class Command {
-    type: CommandType | undefined;
-
-    constructor(type: CommandType | undefined) {
-        this.type = type;
+const ERROR_COMMAND: Command = {
+    id: '', 
+    description: '', 
+    expectedArgs: 0, 
+    execute: function(term, args) { 
+        term.append_colored("/bin/sh: command not found: " + args[0], "red");
+        return false; 
     }
+};
 
-    isError(): boolean {
-        return typeof(this.type) == 'undefined';
-    }
-
-    static parse(str: String): Command {
-        if((<any>Object).values(CommandType).includes(str.trim()))
-            return new Command(str as CommandType);
-        else
-            return new Command(undefined);
-    }
-
-    execute(term: Terminal) {
-        switch(this.type) {
-            case CommandType.CLEAR:
+const COMMANDS: Command[] = [
+    {
+        id: 'clear', 
+        description: 'Clears the Terminal.', 
+        expectedArgs: 1,
+        execute: function(term: Terminal, args: string[]) {
+            if(args.length == this.expectedArgs) {
                 term.clear();
-                break;
-            case CommandType.HELP:
-                term.append("\n" + HELP_TEXT);
-                break;
-            case CommandType.ABOUT:
-                term.append("\n" + ABOUT_TEXT);
-                break;
-            case CommandType.SOCIALS:
-                term.append("\n"+ SOCIALS_TEXT);
+                return true;
+            }
+            else {
+                term.append_colored("clear: unexpected argument '" + args[1] + "'", "red");
+                return false;
+            }
+        }
+    },
+    {
+        id: 'help',
+        description: 'Displays this help text',
+        expectedArgs: 1,
+        execute: function(term: Terminal, args: string[]) {
+            if(args.length == this.expectedArgs) {
+                term.append(HELP_TEXT1);
+                term.append(command_list());
+                term.append(HELP_TEXT2);
+                return true;
+            }
+            else {
+                term.append_colored("help: unexpected argument '" + args[1] + "'", "red");
+                return false;
+            }
+        }
+    },
+    {
+        id: 'about',
+        description: 'Displays some information about me and my projects',
+        expectedArgs: 1,
+        execute: function(term: Terminal, args: string[]) {
+            if(args.length == this.expectedArgs) {
+                term.append(ABOUT_TEXT);
+                return true;
+            }
+            else {
+                term.append_colored("about: unexpected argument '" + args[1] + "'", "red");
+                return false;
+            }
+        }
+    },
+    {
+        id: 'socials',
+        description: 'Displays a list of my social media profiles',
+        expectedArgs: 1,
+        execute: function(term: Terminal, args: string[]) {
+            if(args.length == this.expectedArgs) {
+                term.append(SOCIALS_TEXT);
+                return true;
+            }
+            else {
+                term.append_colored("socials: unexpected argument '" + args[1] + "'", "red");
+                return false;
+            }
         }
     }
+];
+
+function command_list(): string {
+    let str = '';
+    COMMANDS.forEach((cmd: Command) => {
+        str += colored('*', 'green') + ' ' + cmd.id + ': ' + cmd.description + '\n';
+    });
+    return str;
+}
+
+function find_command(id: string): Command {
+    for(let i = 0; i < COMMANDS.length; i++) {
+        if(COMMANDS[i].id == id)
+            return COMMANDS[i];
+    }
+    return ERROR_COMMAND;
+}
+
+function link(label: string | undefined, link: string): string {
+    return '<a href="' + link + '"><span class=link>' + label + '</span></a>';
+}
+
+function bold(str: string): string {
+    return '<span class=bold>' + str + '</span>';
+}
+
+function colored(str: string, color: Color): string {
+    return '<span style=\"color:' + color as string + '\">' + str + "</span>";
 }
 
 class Terminal {
@@ -151,16 +205,12 @@ class Terminal {
     }
 
     execute(str: string) {
-        if(str.replace(" ", "").length == 0)
+        if(str.trim().length == 0)
             return;
-        let command = Command.parse(str);
-        if(command.isError()) {
-            this.newline();
-            this.append_colored("/bin/sh: command not found: " + str, "red");
-            return;
-        }
-
-        command.execute(this);
+        this.newline();
+        
+        let args = str.trim().split(' ');
+        find_command(args[0]).execute(this, args);
     }
 
     parse_prompt(): string {
@@ -213,21 +263,18 @@ const term = new Terminal('terminal');
 
 document.getElementById('socials-button')?.addEventListener('click', (e) => {
     term.append("socials");
-    new Command(CommandType.SOCIALS).execute(term);
-    term.input = "";
+    find_command("socials").execute(term, ["socials"]);
     term.prompt();
 });
 
 document.getElementById('help-button')?.addEventListener('click', (e) => {
     term.append("help")
-    new Command(CommandType.HELP).execute(term);
-    term.input = "";
+    find_command("help").execute(term, ["help"]);
     term.prompt();
 });
 
 document.getElementById('about-button')?.addEventListener('click', (e) => {
     term.append("about")
-    new Command(CommandType.ABOUT).execute(term);
-    term.input = "";
+    find_command("about").execute(term, ["about"]);
     term.prompt();
 });
