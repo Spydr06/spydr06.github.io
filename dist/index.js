@@ -1,12 +1,15 @@
 "use strict";
 var _a, _b, _c;
-const SPAN_BOLD = "<span class='bold'>";
-const SPAN_UNDERLINED = "<span class='underline>";
-const SPAN_END = "</span>";
-const HELP_TEXT1 = `
-${SPAN_BOLD}====== spydr06.github.io ======${SPAN_END}
+const GREETING = `${bold('====== spydr06.github.io ======')}
 
-Commands:
+Hi there and welcome to my (${colored("Spydr06's", "blue")}) homepage.
+Feel free to type in some commands, if you need help,
+type ${colored("help", "cyan")}.
+`;
+const HELP_TEXT1 = `
+${bold('====== spydr06.github.io ======')}
+
+${colored('Commands:', 'yellow')}
 `;
 const HELP_TEXT2 = `
 ${colored("How do you run commands?", "yellow")}
@@ -27,11 +30,11 @@ then discovered Processing (a program to easily write java), with which I wrote 
 few little games and applications. Since two years now I mainly program in C and Rust.
 
 My current, and biggest project so far is my own programming language called "CSpydr".
-It's a imperative/procedural low-level language written in pure C, while having many
+It's an imperative/procedural low-level language written in pure C, while having many
 similarities with C. You can find more information here: ${link("https://github.com/spydr06/cspydr.git", "https://github.com/spydr06/cspydr.git")}
 
-You want to see a few more projects of me? type "projects" into the console.
-You can visit my other profiles, by typing "socials".
+You want to see a few more projects of me? type ${colored('projects', 'cyan')} into the console.
+You can visit my other profiles, by typing ${colored('socials', 'cyan')}.
 `;
 const SOCIALS_TEXT = `
 ${bold("Spydr06's social media profiles:")}
@@ -112,12 +115,21 @@ const COMMANDS = [
                 return false;
             }
         }
+    },
+    {
+        id: 'projects',
+        description: 'Displays a list of some of my projects I\'ve created so far',
+        expectedArgs: 1,
+        execute: function (term, args) {
+            term.append_colored('Coming soon...', 'orange');
+            return false;
+        }
     }
 ];
 function command_list() {
     let str = '';
     COMMANDS.forEach((cmd) => {
-        str += colored('*', 'green') + ' ' + cmd.id + ': ' + cmd.description + '\n';
+        str += colored('*', 'green') + ' ' + colored(cmd.id, 'cyan') + ': ' + cmd.description + '\n';
     });
     return str;
 }
@@ -152,6 +164,7 @@ class Terminal {
         this.elem.addEventListener('keypress', e => this.update(e));
         this.elem.addEventListener('keydown', e => this.update(e));
         this.elem.addEventListener('click', e => this.updateCursor());
+        this.append(GREETING);
         this.prompt();
         this.updateCursor();
     }
