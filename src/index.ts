@@ -119,27 +119,32 @@ class Terminal {
         this.elem.setAttribute("contentEditable", "true");
         this.elem.addEventListener("oncut", e => e.preventDefault(), false);
         this.elem.addEventListener("onpaste", e => e.preventDefault(), false);
-        this.elem.addEventListener('keypress', (e) => this.update(e));
+        this.elem.addEventListener('keypress', e => this.update(e));
+        this.elem.addEventListener('keydown', e => this.update(e));
+        this.elem.addEventListener('click', e => this.updateCursor());
         
         this.prompt();
         this.updateCursor();
     }
     
     update(e: KeyboardEvent) {
-        e.preventDefault();
-        switch(e.code) {
-            case 'Enter': 
-                this.execute(this.input);
-                this.input = "";
-                this.prompt();
-                break;
-            case 'Backspace':
-                this.input = this.input.slice(0, this.input.length - 2);
-                break;
-            default:
-                this.input += e.key;
-                this.append(e.key);
-                break;
+        if(e.key == 'Enter') {
+            this.execute(this.input);
+            this.input = "";
+            this.prompt();
+            e.preventDefault();
+        }
+        else if(e.key == 'Backspace') {
+            if(this.input.length > 0) {
+                this.input = this.input.slice(0, this.input.length - 1);
+                this.elem.innerHTML = this.elem.innerHTML.slice(0, this.elem.innerHTML.length - 1);
+            }
+            e.preventDefault();
+        }
+        else if(e.key.length == 1){
+            this.input += e.key;
+            this.append(e.key);
+            e.preventDefault();
         }
 
         this.updateCursor();
@@ -199,6 +204,8 @@ class Terminal {
 
         sel?.removeAllRanges();
         sel?.addRange(range);
+
+        this.elem.scrollTop = this.elem.scrollHeight;
     }
 }
 
