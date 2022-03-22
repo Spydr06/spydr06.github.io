@@ -24,10 +24,11 @@ body, html {
 }
 
 #window-title {
-    font-family: hack, monospace;
+    font-family: 'Hack', monospace;
     float: center;
     width: auto;
     margin-top: 7px;
+    margin-right: 5%;
 
     color: #ffffff;
     font-weight: bold;
@@ -81,7 +82,7 @@ body, html {
 }
 
 #terminal {
-    font-family: 'hack', monospace;
+    font-family: 'Hack', monospace;
     font-size: 14px;
     resize: none;
 
@@ -92,6 +93,7 @@ body, html {
     height: calc(100% - 90px);
     border:none;
     overflow-y: scroll;
+    white-space: pre-wrap;
 }
 
 #terminal:focus {
@@ -131,5 +133,13 @@ span.bold {
 }
 
 span.link {
+    cursor: pointer;
+    z-index: 10;
     text-decoration: underline;
+    color: #6d43a6;
+}
+
+span.tab {
+    display: inline-block;
+    margin-left: 40px;
 }

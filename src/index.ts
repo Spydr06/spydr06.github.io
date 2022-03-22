@@ -46,7 +46,26 @@ ${bold("Spydr06's social media profiles:")}
 ${colored("*", "green")} GitHub:  ${link("Spydr06", "https://github.com/Spydr06")}
 ${colored("*", "green")} Reddit: ${link("u/mcspiderfe", "https://reddit.com/u/mcspiderfe")}
 ${colored("*", "green")} Discord: Spydr#7096
-${colored("*", "green")} EMail: spydr06@web.de
+`;
+
+const FETCH_TEXT = `
+                   *.                          ${bold('Spydr06@Germany')}
+               **********          ****        ----------------
+           ****************************,       ${colored('Uptime', 'magenta')}: 16 years
+        ****%%%%%%%%%%%%%%%%%%%%%%%*****       ${colored('Programming Languages', 'magenta')}: CSpydr, C, Rust, Java
+       *****%.      %  %%, /%%  %%%******      ${colored('OS', 'magenta')}: Arch Linux
+       *****%.  %%%%%%  %   %  %%%%******      ${colored('WM', 'magenta')}: bspwm
+      .*****%.     %%%    %    %%%%****        ${colored('Shell', 'magenta')}: zsh  
+      ******%.  %%%%%%%  (%*  %%%%%**          ${colored('Editor', 'magenta')}: VSCodium, nano
+      ******%%%%%%%%%%%%%%%%%%%%%%%            ${colored('Interests', 'magenta')}: Linux, Compilers, VMs, "Lower-Level Stuff" 
+     *******%%%%%%%%%%%%%%%%%%%%%%%            ${colored('Top Project', 'magenta')}: CSpydr
+     *******%%%%%%%%%%%%%%%%%%%%%%%*****,      ${colored('Dotfiles', 'magenta')}: https://github.com/spydr06/dotfiles.git
+    ,*******%%%%%%%%%%%%%%%%%%%%%%%*******    
+     *******%%________%%%%%%%%%%%%%******       
+        ****%%%%%%%%%%%%%%%%%%%%%%%*****       ${bold('contacts')}
+            **********  ****************       --------
+               ****        .***********        ${colored('Reddit', 'orange')}: ${link('u/mcspiderfe', 'https://reddit.com/u/mcspiderfe')}
+                                     *.        ${colored('Discord', 'blue')}: Spydr#7096
 `;
 
 interface Command {
@@ -138,14 +157,27 @@ const COMMANDS: Command[] = [
             term.append_colored('Coming soon...', 'orange');
             return false;
         }
+    },
+    {
+        id: 'fetch',
+        description: 'Displays a neofetch-like status information',
+        expectedArgs: 1,
+        execute: function(term: Terminal, args: string[]) {
+            if(args.length == this.expectedArgs) {
+                term.append(FETCH_TEXT);
+                return true;
+            }
+            else {
+                term.append_colored("fetch: unexpected argument '" + args[1] + "'", "red");
+                return false;
+            }
+        }
     }
 ];
 
 function command_list(): string {
     let str = '';
-    COMMANDS.forEach((cmd: Command) => {
-        str += colored('*', 'green') + ' ' + colored(cmd.id, 'cyan') + ': ' + cmd.description + '\n';
-    });
+    COMMANDS.forEach((cmd: Command) => str += colored('*', 'green') + ' ' + colored(cmd.id, 'cyan') + ': ' + cmd.description + '\n');
     return str;
 }
 
@@ -166,7 +198,20 @@ function bold(str: string): string {
 }
 
 function colored(str: string, color: Color): string {
-    return '<span style=\"color:' + color as string + '\">' + str + "</span>";
+    return '<span style=\"color:' + get_color(color) + '\">' + str + "</span>";
+}
+
+function get_color(color: Color): string {
+    const COLOR_MAP = {
+        red:     '#be100e',
+        green:   '#8ce10b',
+        blue:    '#008df8',
+        magenta: '#f07178',
+        yellow:  '#ffe35b',
+        cyan:    '#00d8eb',
+        orange:  '#e8863c',
+    };
+    return COLOR_MAP[color];
 }
 
 class Terminal {
